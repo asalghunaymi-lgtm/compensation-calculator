@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حاسبة احتساب التعويضات البيئية</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-title">
+      <h1>حاسبة احتساب التعويضات البيئية</h1>
+      <p class="subtitle">مخالفات إلقاء مياه الصرف والسوائل غير المعالجة في الأوساط البيئية &mdash; المحالة إلى النيابة العامة</p>
+      <p class="legal-ref">وفقًا للمادة (٣٥/١) والمادة (٤٣) من نظام البيئة، والمادة (الخامسة) من لائحته التنفيذية &mdash; مبدأ "الملوّث يدفع"</p>
+    </div>
+    <div class="header-actions no-print">
+      <button id="newCaseBtn" class="btn btn-outline">قضية جديدة</button>
+      <button id="savedCasesBtn" class="btn btn-outline">القضايا المحفوظة</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- Saved cases panel -->
+  <section id="savedCasesPanel" class="panel saved-panel no-print hidden">
+    <div class="panel-header">
+      <h2>القضايا المحفوظة</h2>
+      <button class="btn-icon" id="closeSavedPanel">✕</button>
+    </div>
+    <div id="savedCasesList" class="saved-list"></div>
+  </section>
+
+  <!-- Case info -->
+  <section class="panel no-print">
+    <div class="panel-header">
+      <h2>١. بيانات الواقعة</h2>
+    </div>
+    <div class="grid grid-4">
+      <label class="field">
+        <span>رقم القضية / الملف</span>
+        <input type="text" id="caseNumber" placeholder="مثال: 1447/…">
+      </label>
+      <label class="field">
+        <span>اسم / صفة المخالف</span>
+        <input type="text" id="violatorName" placeholder="اسم المنشأة أو الشخص">
+      </label>
+      <label class="field">
+        <span>تاريخ وقوع المخالفة</span>
+        <input type="date" id="violationDate">
+      </label>
+      <label class="field">
+        <span>الموقع الجغرافي</span>
+        <input type="text" id="location" placeholder="المدينة / الإحداثيات">
+      </label>
+      <label class="field">
+        <span>نوع المخالفة</span>
+        <select id="violationType">
+          <option>إلقاء مياه صرف صحي غير معالجة</option>
+          <option>إلقاء سوائل صناعية غير معالجة</option>
+          <option>تلوث مياه سطحية</option>
+          <option>تلوث مياه جوفية</option>
+          <option>تلوث مياه بحرية</option>
+          <option>أخرى</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>الجهة المحيلة</span>
+        <input type="text" id="referredTo" value="النيابة العامة" placeholder="النيابة العامة">
+      </label>
+      <label class="field">
+        <span>رقم البلاغ / الضبط</span>
+        <input type="text" id="reportNumber" placeholder="رقم محضر الضبط">
+      </label>
+      <label class="field">
+        <span>مُعِد التقرير</span>
+        <input type="text" id="preparedBy" placeholder="الاسم والصفة الوظيفية">
+      </label>
+    </div>
+  </section>
+
+  <!-- Violations -->
+  <section class="panel">
+    <div class="panel-header">
+      <h2>٢. عناصر التعويض <span class="hint">(يُحتسب لكل مخالفة على حدة ثم يُجمع الإجمالي)</span></h2>
+      <button id="addViolationBtn" class="btn btn-primary no-print">+ إضافة مخالفة</button>
+    </div>
+    <div id="violationsList"></div>
+  </section>
+
+  <!-- Grand total -->
+  <section class="panel total-panel">
+    <div class="formula-box">
+      <div class="formula-title">المعادلة المرجعية</div>
+      <div class="formula-eq">ت = ( خم + خغ ) + كت + دب − خصم</div>
+    </div>
+    <div class="grand-total">
+      <span>إجمالي التعويض المستحق (ت)</span>
+      <strong id="grandTotal">0</strong>
+    </div>
+    <div id="warningsBox" class="warnings"></div>
+  </section>
+
+  <section class="panel actions-panel no-print">
+    <button id="saveCaseBtn" class="btn btn-primary">حفظ القضية</button>
+    <button id="printReportBtn" class="btn btn-secondary">إنشاء التقرير للنيابة العامة (طباعة / PDF)</button>
+    <button id="exportJsonBtn" class="btn btn-outline">تصدير JSON</button>
+    <label class="btn btn-outline file-btn">
+      استيراد JSON
+      <input type="file" id="importJsonInput" accept="application/json" hidden>
+    </label>
+  </section>
+
+  <!-- Printable report -->
+  <section id="reportView" class="report-view">
+    <div class="report-header">
+      <h2>تقرير احتساب التعويضات البيئية</h2>
+      <p>مرفوع إلى النيابة العامة استنادًا للمادة (٤٣) من نظام البيئة</p>
+    </div>
+    <div id="reportBody"></div>
+  </section>
+
+</main>
+
+<footer class="app-footer no-print">
+  <p>أداة داخلية للاحتساب الاسترشادي وفق دليل احتساب التعويضات البيئية. لا تُعتمد أي قيمة نهائية إلا بعد مراجعة لجنة احتساب التعويضات واعتماد الشواهد المؤيدة.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
